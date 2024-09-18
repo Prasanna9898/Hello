@@ -1,0 +1,43 @@
+# Function to extract features from images
+def extract_features(image):
+    # Example: Extract color histogram features
+    hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+    hist = cv2.normalize(hist, hist).flatten()
+    return hist
+
+# Load images from folder
+folder_path = '/content/drive/MyDrive/pavani_didi_dataset/ALLFOG-1'
+images = []
+for filename in os.listdir(folder_path):
+    img = cv2.imread(os.path.join(folder_path, filename))
+    if img is not None:
+        images.append(img)
+
+# Extract features from images
+features = np.array([extract_features(img) for img in images])
+
+# Choose number of clusters
+num_clusters = 5
+
+# Apply K-means clustering
+kmeans = KMeans(n_clusters=num_clusters)
+kmeans.fit(features)
+
+# Get cluster labels
+cluster_labels = kmeans.labels_
+
+# Map cluster labels to fog categories
+cluster_fog_mapping = {
+    0: 'No fog',
+    1: 'Light fog',
+    2: 'Medium fog',
+    3: 'Thick fog',
+    4: 'Dense fog'
+}
+
+# Assign fog categories to clusters
+cluster_category = [cluster_fog_mapping[label] for label in cluster_labels]
+
+# Print results
+for i in range(num_clusters):
+    print(f"Cluster {i}: {cluster_category[i]}")
